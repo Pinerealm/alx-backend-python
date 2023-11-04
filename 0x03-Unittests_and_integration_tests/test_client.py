@@ -82,7 +82,9 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up for the integration test"""
-        cls.get_patcher = patch('client.get_json', side_effect=TEST_PAYLOAD[0])
+        cls.get_patcher = patch('client.get_json',
+                                side_effect=[TEST_PAYLOAD[0][0],
+                                             TEST_PAYLOAD[0][1]])
         cls.get_patcher.start()
 
     @classmethod
