@@ -4,7 +4,7 @@ from client import GithubOrgClient
 from fixtures import TEST_PAYLOAD
 from parameterized import parameterized, parameterized_class
 import unittest
-from unittest.mock import patch, PropertyMock
+from unittest.mock import Mock, patch, PropertyMock
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -82,10 +82,13 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up for the integration test"""
-        cls.get_patcher = patch('client.get_json',
-                                side_effect=[TEST_PAYLOAD[0][0],
-                                             TEST_PAYLOAD[0][1]])
-        cls.get_patcher.start()
+        mock_response = Mock()
+        mock_response.json.side_effect = [TEST_PAYLOAD[0][0],
+                                          TEST_PAYLOAD[0][1],
+                                          TEST_PAYLOAD[0][0],
+                                          TEST_PAYLOAD[0][1]]
+        cls.get_patcher = patch('requests.get')
+        cls.get_patcher.start().return_value = mock_response
 
     @classmethod
     def tearDownClass(cls):
@@ -97,5 +100,9 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         """
         test_client = GithubOrgClient("google")
         self.assertEqual(test_client.public_repos(), self.expected_repos)
+
+    def test_public_repos_with_license(self):
+        """Test the public_repos method with the license argument"""
+        test_client = GithubOrgClient("google")
         self.assertEqual(test_client.public_repos("apache-2.0"),
                          self.apache2_repos)
